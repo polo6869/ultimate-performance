@@ -32,7 +32,7 @@ export interface PerformanceRow {
 
   // Sleep details
   sleep_consistency_pct: number | null;
-  disturbances: number | null;
+  sleep_disturbance_count: number | null;
 
   // Workout details
   workout_zone23_minutes: number | null;
@@ -45,15 +45,17 @@ export interface PerformanceRow {
   body_diff_kg: number | null;
 
   // Learning
-  pages: number | null;
-  video_minutes: number | null;
+  learning_pages: number | null;
+  learning_video_minutes: number | null;
 
-  // Projects
-  projectDailyWeeklyScore?: number | null;
-  focusScore?: number | null;
-  focus_hours?: number | null;
-  daily_tasks_pct?: number | null;
-  weekly_tasks_pct?: number | null;
+  // Projects — raw columns
+  project_daily_weekly_score: number | null;
+  project_focus_score: number | null;
+  focus_hours: number | null;
+  daily_earned: number | null;
+  daily_possible: number | null;
+  weekly_earned: number | null;
+  weekly_possible: number | null;
 }
 
 /** Get Berlin-timezone date string (YYYY-MM-DD) for "today" */
@@ -66,6 +68,37 @@ export function getBerlinDateString(): string {
   }).format(new Date());
 }
 
+/** Apply fallback calculations for health_score and project_score if null */
+function applyFallbacks(row: PerformanceRow): PerformanceRow {
+  const result = { ...row };
+
+  if (
+    result.health_score == null &&
+    result.sleep_score != null &&
+    result.recovery_score != null &&
+    result.workout_score != null
+  ) {
+    result.health_score = Math.round(
+      result.sleep_score * 0.45 +
+      result.recovery_score * 0.45 +
+      result.workout_score * 0.10
+    );
+  }
+
+  if (
+    result.project_score == null &&
+    result.project_daily_weekly_score != null &&
+    result.project_focus_score != null
+  ) {
+    result.project_score = Math.round(
+      result.project_daily_weekly_score * 0.75 +
+      result.project_focus_score * 0.25
+    );
+  }
+
+  return result;
+}
+
 export async function fetchTodayAndTrend(): Promise<{
   today: PerformanceRow | null;
   yesterday: PerformanceRow | null;
@@ -74,7 +107,6 @@ export async function fetchTodayAndTrend(): Promise<{
 }> {
   const todayStr = getBerlinDateString();
 
-  // Fetch last 31 rows (today + 30 for trend)
   const { data, error } = await supabase
     .from("performance_score")
     .select("*")
@@ -83,14 +115,10 @@ export async function fetchTodayAndTrend(): Promise<{
 
   if (error) throw new Error(error.message);
 
-  const rows: PerformanceRow[] = data ?? [];
+  const rows: PerformanceRow[] = (data ?? []).map(applyFallbacks);
   const today = rows.find((r) => r.date === todayStr) ?? rows[0] ?? null;
   const yesterday = rows.find((r) => r.date !== today?.date) ?? null;
-
-  // Last 7 calendar days for weekly stats
   const weekRows = rows.slice(0, 7);
-
-  // Trend: last 30 rows reversed for chronological chart
   const trend = [...rows].reverse();
 
   return { today, yesterday, trend, weekRows };

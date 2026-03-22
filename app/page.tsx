@@ -380,16 +380,16 @@ export default function Dashboard() {
             {
               label: "Daily Tasks",
               value:
-                today?.daily_tasks_pct != null
-                  ? `${today.daily_tasks_pct}%`
+                today?.daily_earned != null && today?.daily_possible != null && today.daily_possible > 0
+                  ? `${Math.round(today.daily_earned / today.daily_possible * 100)}%`
                   : "—",
               highlight: true,
             },
             {
               label: "Weekly Tasks",
               value:
-                today?.weekly_tasks_pct != null
-                  ? `${today.weekly_tasks_pct}%`
+                today?.weekly_earned != null && today?.weekly_possible != null && today.weekly_possible > 0
+                  ? `${Math.round(today.weekly_earned / today.weekly_possible * 100)}%`
                   : "—",
             },
             {
@@ -438,12 +438,12 @@ export default function Dashboard() {
           breakdown={[
             {
               label: "Pages Read",
-              value: fmt(today?.pages),
+              value: fmt(today?.learning_pages),
               highlight: true,
             },
             {
               label: "Video Minutes",
-              value: fmt(today?.video_minutes),
+              value: fmt(today?.learning_video_minutes),
               unit: "min",
             },
           ]}
@@ -530,7 +530,7 @@ export default function Dashboard() {
           />
           <DetailRow
             label="Disturbances"
-            value={fmt(today?.disturbances)}
+            value={fmt(today?.sleep_disturbance_count)}
           />
         </div>
 
