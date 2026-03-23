@@ -5,6 +5,7 @@ interface BreakdownItem {
   value: string | number | null;
   unit?: string;
   highlight?: boolean;
+  valueColor?: string;
 }
 
 interface ScoreCardProps {
@@ -67,8 +68,9 @@ export default function ScoreCard({
             <span className="text-xs text-[#8a8a8a]">{item.label}</span>
             <span
               className={`text-xs tabular-nums font-medium ${
-                item.highlight ? "text-[#f0f0f0]" : "text-[#8a8a8a]"
+                item.valueColor ? "" : item.highlight ? "text-[#f0f0f0]" : "text-[#8a8a8a]"
               }`}
+              style={item.valueColor ? { color: item.valueColor } : undefined}
             >
               {fmt(item.value, item.unit)}
             </span>

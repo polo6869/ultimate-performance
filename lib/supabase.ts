@@ -48,6 +48,15 @@ export interface PerformanceRow {
   learning_pages: number | null;
   learning_video_minutes: number | null;
 
+  // Nutrition
+  nutrition_kcal_consumed: number | null;
+  nutrition_kcal_burned: number | null;
+  nutrition_deficit: number | null;
+  nutrition_protein: number | null;
+  nutrition_carbs: number | null;
+  nutrition_fat: number | null;
+  nutrition_score: number | null;
+
   // Projects — raw columns
   project_daily_weekly_score: number | null;
   project_focus_score: number | null;
@@ -72,17 +81,32 @@ export function getBerlinDateString(): string {
 function applyFallbacks(row: PerformanceRow): PerformanceRow {
   const result = { ...row };
 
-  if (
-    result.health_score == null &&
-    result.sleep_score != null &&
-    result.recovery_score != null &&
-    result.workout_score != null
-  ) {
-    result.health_score = Math.round(
-      result.sleep_score * 0.45 +
-      result.recovery_score * 0.45 +
-      result.workout_score * 0.10
-    );
+  if (result.health_score == null) {
+    if (
+      result.sleep_score != null &&
+      result.recovery_score != null &&
+      result.workout_score != null &&
+      result.nutrition_score != null
+    ) {
+      // 4-component formula when nutrition is available
+      result.health_score = Math.round(
+        result.sleep_score * 0.40 +
+        result.recovery_score * 0.40 +
+        result.workout_score * 0.10 +
+        result.nutrition_score * 0.10
+      );
+    } else if (
+      result.sleep_score != null &&
+      result.recovery_score != null &&
+      result.workout_score != null
+    ) {
+      // 3-component fallback without nutrition
+      result.health_score = Math.round(
+        result.sleep_score * 0.45 +
+        result.recovery_score * 0.45 +
+        result.workout_score * 0.10
+      );
+    }
   }
 
   if (

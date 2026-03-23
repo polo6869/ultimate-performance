@@ -42,6 +42,13 @@ const BookIcon = () => (
     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
   </svg>
 );
+const NutritionIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+    <path d="M7 2v20" />
+    <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+  </svg>
+);
 const RefreshIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="23 4 23 10 17 10" />
@@ -353,7 +360,7 @@ export default function Dashboard() {
       </section>
 
       {/* ── Score Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {/* Health */}
         <ScoreCard
           title="Health"
@@ -365,6 +372,7 @@ export default function Dashboard() {
             { label: "Sleep", value: fmt(today?.sleep_score), highlight: true },
             { label: "Recovery", value: fmt(today?.recovery_score) },
             { label: "Workout", value: fmt(today?.workout_score) },
+            { label: "Nutrition", value: fmt(today?.nutrition_score) },
             { label: "Cycle", value: fmt(today?.cycle_score) },
           ]}
         />
@@ -445,6 +453,53 @@ export default function Dashboard() {
               label: "Video Minutes",
               value: fmt(today?.learning_video_minutes),
               unit: "min",
+            },
+          ]}
+        />
+
+        {/* Nutrition */}
+        <ScoreCard
+          title="Nutrition"
+          score={today?.nutrition_score ?? null}
+          scoreColor="#E879A0"
+          icon={<NutritionIcon />}
+          breakdown={[
+            {
+              label: "Net Deficit",
+              value:
+                today?.nutrition_deficit != null
+                  ? `${today.nutrition_deficit > 0 ? "+" : ""}${Math.round(today.nutrition_deficit)} kcal`
+                  : "—",
+              valueColor:
+                today?.nutrition_deficit != null
+                  ? today.nutrition_deficit > 0
+                    ? "#1D9E75"
+                    : "#E24B4A"
+                  : undefined,
+            },
+            {
+              label: "Burned / Eaten",
+              value:
+                today?.nutrition_kcal_burned != null && today?.nutrition_kcal_consumed != null
+                  ? `${Math.round(today.nutrition_kcal_burned)} / ${Math.round(today.nutrition_kcal_consumed)}`
+                  : "—",
+              unit: today?.nutrition_kcal_burned != null ? " kcal" : undefined,
+            },
+            {
+              label: "Protein",
+              value:
+                today?.nutrition_protein != null
+                  ? `${Math.round(today.nutrition_protein)}g / 150g`
+                  : "—",
+              highlight: true,
+            },
+            {
+              label: "Carbs",
+              value: today?.nutrition_carbs != null ? `${Math.round(today.nutrition_carbs)}g` : "—",
+            },
+            {
+              label: "Fat",
+              value: today?.nutrition_fat != null ? `${Math.round(today.nutrition_fat)}g` : "—",
             },
           ]}
         />
